@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Todo App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-bottom: 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .message {
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .links {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .links a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            display: block;
+            margin: 0.5rem 0;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: none;
+            margin-left: 0.5rem;
+        }
+
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">📝</div>
+        <h1>Welcome Back</h1>
+        
+        <div id="message" class="message" style="display: none;"></div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit" class="btn" id="loginBtn">
+                Login
+                <span class="loading" id="loading">
+                    <span class="spinner"></span>
+                </span>
+            </button>
+        </form>
+
+        <button class="btn btn-secondary" onclick="showForgetPassword()">
+            Forgot Password?
+        </button>
+        
+        <div class="links">
+            <a href="/register">Don't have an account? Register</a>
+        </div>
+    </div>
+
+    <!-- Forget Password Modal -->
+    <div id="forgetPasswordModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 10px; width: 90%; max-width: 400px;">
+            <h2>Reset Password</h2>
+            <p>Enter your email address and we'll send you a link to reset your password.</p>
+            
+            <div id="forgetMessage" class="message" style="display: none;"></div>
+            
+            <form id="forgetForm">
+                <div class="form-group">
+                    <label for="forgetEmail">Email</label>
+                    <input type="email" id="forgetEmail" name="email" required>
+                </div>
+                
+                <button type="submit" class="btn" id="forgetBtn">
+                    Send Reset Link
+                    <span class="loading" id="forgetLoading">
+                        <span class="spinner"></span>
+                    </span>
+                </button>
+            </form>
+            
+            <button class="btn btn-secondary" onclick="hideForgetPassword()" style="margin-top: 1rem;">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = message;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showForgetMessage(message, type) {
+            const messageDiv = document.getElementById('forgetMessage');
+            messageDiv.textContent = message;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showLoading(show) {
+            const loginBtn = document.getElementById('loginBtn');
+            const loading = document.getElementById('loading');
+            
+            if (show) {
+                loginBtn.disabled = true;
+                loading.style.display = 'inline-block';
+                loginBtn.textContent = 'Logging in';
+            } else {
+                loginBtn.disabled = false;
+                loading.style.display = 'none';
+                loginBtn.textContent = 'Login';
+            }
+        }
+
+        function showForgetLoading(show) {
+            const forgetBtn = document.getElementById('forgetBtn');
+            const loading = document.getElementById('forgetLoading');
+            
+            if (show) {
+                forgetBtn.disabled = true;
+                loading.style.display = 'inline-block';
+                forgetBtn.textContent = 'Sending';
+            } else {
+                forgetBtn.disabled = false;
+                loading.style.display = 'none';
+                forgetBtn.textContent = 'Send Reset Link';
+            }
+        }
+
+        function showForgetPassword() {
+            document.getElementById('forgetPasswordModal').style.display = 'block';
+        }
+
+        function hideForgetPassword() {
+            document.getElementById('forgetPasswordModal').style.display = 'none';
+            document.getElementById('forgetForm').reset();
+            document.getElementById('forgetMessage').style.display = 'none';
+        }
+
+        // Login form
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            showLoading(true);
+            
+            try {
+                const response = await fetch('/api/users/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('Login successful!', 'success');
+                    // Store token
+                    localStorage.setItem('token', data.token);
+                    // Redirect to dashboard or show success
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1000);
+                } else {
+                    showMessage(data.error || 'Login failed', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        // Forget password form
+        document.getElementById('forgetForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('forgetEmail').value;
+            
+            showForgetLoading(true);
+            
+            try {
+                const response = await fetch('/api/users/forget-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showForgetMessage('Password reset email sent! Check your inbox.', 'success');
+                    setTimeout(() => {
+                        hideForgetPassword();
+                    }, 2000);
+                } else {
+                    showForgetMessage(data.error || 'Failed to send reset email', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showForgetMessage('Network error. Please try again.', 'error');
+            } finally {
+                showForgetLoading(false);
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('forgetPasswordModal').addEventListener('click', (e) => {
+            if (e.target.id === 'forgetPasswordModal') {
+                hideForgetPassword();
+            }
+        });
+    </script>
+</body>
+</html> 
